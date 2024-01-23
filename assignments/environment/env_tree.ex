@@ -39,5 +39,37 @@ defmodule EnvTree do
     lookup(right, key)
   end
 
+  # Can't remove from an empty tree
+  def remove(:nil, _) do :nil end
 
+  # If the right branch is empty, the left one can be "moved" up
+  def remove({:node, key, _, left, :nil}, key) do left end
+
+  # If the left branch is empty, the right one can be "moved" up
+  def remove({:node, key, _, :nil, right}, key) do right end
+
+  # If neither the left or right is empty, the rightmost value in the left branch will be moved up
+  def remove({:node, key, _, left, right}, key) do
+    {new_left, right_key, right_value} = rightmost(left)
+    {:node, right_key, right_value, new_left, right}
+  end
+
+  # Given key is smaller than key in node so remove in left subtree
+  def remove({:node, some_key, some_value, left, right}, key) when key < some_key do
+    {:node, some_key, some_value, remove(left, key), right}
+  end
+
+  # Given key is larger than key in node so remove in right subtree
+  def remove({:node, some_key, some_value, left, right}, key) do
+    {:node, some_key, some_value, left, remove(right, key)}
+  end
+
+  # Retrieve the key-value pair and move the left branch up when rightmost node is found
+  def rightmost({:node, key, value, left, :nil}) do {left, key, value} end
+
+  # Continue searching for the rightmost node and reconstruct the current node
+  def rightmost({:node, key, value, left, right}) do
+    {new_right, right_key, right_value} = rightmost(right)
+    {{:node, key, value, left, new_right}, right_key, right_value}
+  end
 end
