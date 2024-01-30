@@ -17,7 +17,7 @@ defmodule Env do
       if id < head_id do
         [{id, str}, {head_id, head_str} | tail]
       else
-        [{head_id, head_str} | add(tail, id, str)]
+        [{head_id, head_str} | add(id, str, tail)]
       end
     end
 
@@ -30,17 +30,22 @@ defmodule Env do
     def lookup(_, []) do :nil end
 
     def lookup(id, [_ | tail]) do
-      lookup(tail, id)
+      lookup(id, tail)
     end
 
 
-    # Removes the id-str pair associated with the id
+    # Removes the id-str pair associated with the id(s)
+    def remove([first_id | rest_ids], env) do
+      env = remove(first_id, env)
+      remove(rest_ids, env)
+    end
+
     def remove(id, [{id, _} | tail]) do tail end
 
     def remove(_, []) do [] end
 
     def remove(id, [head | tail]) do
-      [head | remove(tail, id)]
+      [head | remove(id, tail)]
     end
 
 end
