@@ -3,6 +3,10 @@ defmodule EnvTree do
   # Node is a built-in type and can't be redefined, hence the commented line
   # @type node() :: :nil | {:node, atom(), number(), node(), node()}
 
+  # Create a new map
+  def new() do :nil end
+
+
   # Adds a key-value pair to an empty tree, returns a new tree
   def add(:nil, key, value) do
     {:node, key, value, :nil, :nil}
@@ -18,10 +22,11 @@ defmodule EnvTree do
     {:node, some_key, some_value, add(left, key, value), right}
   end
 
-  # If the key-value pair should be added to the left subtree
+  # If the key-value pair should be added to the right subtree
   def add({:node, some_key, some_value, left, right}, key, value) do
     {:node, some_key, some_value, left, add(right, key, value)}
   end
+
 
   # An empty tree doesn't contain any key-value pairs
   def lookup(:nil, _) do :nil end
@@ -38,6 +43,7 @@ defmodule EnvTree do
   def lookup({:node, _, _, _, right}, key) do
     lookup(right, key)
   end
+
 
   # Can't remove from an empty tree
   def remove(:nil, _) do :nil end
@@ -72,4 +78,5 @@ defmodule EnvTree do
     {new_right, right_key, right_value} = rightmost(right)
     {{:node, key, value, left, new_right}, right_key, right_value}
   end
+
 end

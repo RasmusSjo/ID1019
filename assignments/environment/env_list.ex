@@ -4,7 +4,6 @@ defmodule EnvList do
   def new() do [] end
 
 
-
   # Returns a new map containing the new key-value pair in sorted order
   def add([], key, value) do
     [{key, value}]
@@ -22,6 +21,7 @@ defmodule EnvList do
     end
   end
 
+
   # Returns the key-value pair associated to the key or nil if key wasn't found
   def lookup([{key, some_value} | _], key) do
     {key, some_value}
@@ -33,6 +33,7 @@ defmodule EnvList do
     lookup(tail, key)
   end
 
+
   # Removes the key-value pair associated with the key
   def remove([{key, _} | tail], key) do tail end
 
@@ -41,4 +42,5 @@ defmodule EnvList do
   def remove([head | tail], key) do
     [head | remove(tail, key)]
   end
+
 end
