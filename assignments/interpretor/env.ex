@@ -35,9 +35,11 @@ defmodule Env do
 
 
     # Removes the id-str pair associated with the id(s)
+    def remove([], env) do env end
+
     def remove([first_id | rest_ids], env) do
-      env = remove(first_id, env)
-      remove(rest_ids, env)
+      updated = remove(first_id, env)
+      remove(rest_ids, updated)
     end
 
     def remove(id, [{id, _} | tail]) do tail end
@@ -46,6 +48,35 @@ defmodule Env do
 
     def remove(id, [head | tail]) do
       [head | remove(id, tail)]
+    end
+
+    # Function for creating a new environment only containing the
+    # variable identifiers provided
+    def closure([], _) do [] end
+
+    def closure(free, env) do
+      closure(free, [], env)
+    end
+
+    def closure([], closure, _) do closure end
+
+    def closure([id | tail], closure, env) do
+      case lookup(id, env) do
+        :nil ->
+          :error
+        {id, str} ->
+          closure(tail, [{id, str} | closure], env)
+      end
+    end
+
+    def args([], [], env) do {:ok, env} end
+
+    def args([], _, _) do :error end
+
+    def args(_, [], _) do :error end
+
+    def args([param | params], [str | strs], env) do
+      args(params, strs, add(param, str, env))
     end
 
 end
