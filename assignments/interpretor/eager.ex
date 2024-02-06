@@ -1,15 +1,23 @@
 defmodule Eager do
 
   # term() is a built in type and can't be redefined
-  # @type term() :: {:atm, atom()} | {:var, atom()} | {:cons, term(), term()}
+  @type expression() :: {:atm, atom()}
+    | {:var, atom()}
+    | {:cons, expression(), expression()}
 
-  # @type pattern() :: term() | :ignore
+  @type pattern() :: {:atm, atom()}
+  | {:var, atom()}
+  | {:cons, expression(), expression()}
+  | :ignore
+
+  @type match() :: {:match, pattern(), expression()}
+
+  @type sequence() :: [expression()] | [match() | sequence()]
 
   #----------------------------Evaluating expressions------------------------------#
 
   # Evaluating an atom
   def eval_expr({:atm, id}, _) do {:ok, id} end
-
 
   # Evaluating a variable
   def eval_expr({:var, id}, env) do
@@ -18,7 +26,6 @@ defmodule Eager do
       {_, str} -> {:ok, str}
     end
   end
-
 
   # Evaluating a cons term
   def eval_expr({:cons, term1, term2}, env) do
@@ -32,12 +39,76 @@ defmodule Eager do
     end
   end
 
+  # Evaluating a case expression
+  def eval_expr({:case, expr, cls}, env) do
+    case eval_expr(expr, env) do
+      :error -> :error
+      {:ok, str} ->
+        eval_cls(cls, str, env)
+    end
+  end
+
+  def eval_expr({:lambda, params, free, seq}, env) do
+    case Env.closure(free, env) do
+      :error -> :error
+      closure -> {:ok, {:closure, params, seq, closure}}
+    end
+  end
+
+  def eval_expr({:fun, id}, _) do
+    {par, seq} = apply(Prgm, id, [])
+    {:ok, {:closure, par, seq, Env.new()}}
+  end
+
+  def eval_expr({:apply, expr, args}, env) do
+    case eval_expr(expr, env) do
+    :error ->
+      :error
+    {:ok, {:closure, params, seq, closure}} ->
+      case eval_args(args, env) do
+        :error ->
+          :error
+        {:ok, strs} ->
+          case Env.args(params, strs, closure) do
+            :error ->
+              :error
+            {:ok, updated} ->
+              eval_seq(seq, updated)
+          end
+      end
+    end
+  end
+
+  def eval_args(args, env) do
+    eval_args(args, [], env)
+  end
+
+  def eval_args([], strs, _) do {:ok, Enum.reverse(strs)} end
+
+  def eval_args([arg | args], strs, env) do
+    case eval_expr(arg, env) do
+      :error ->
+        :error
+      {_, str} ->
+        eval_args(args, [str | strs], env)
+    end
+  end
+
+  def eval_cls([], _, _) do :error end
+
+  def eval_cls([{:clause, ptrn, seq} | clauses], str, env) do
+    case eval_match(ptrn, str, eval_scope(ptrn, env)) do # Remove vars in the pattern from the env so that it can be matched
+      :fail -> eval_cls(clauses, str, env)
+      {:ok, env} -> eval_seq(seq, env)
+    end
+  end
+
   #------------------------------Pattern matching----------------------------------#
 
   # An _ can be matched to anything
   def eval_match(:ignore, _, env) do {:ok, env} end
 
-  def eval_match({:atm, id}, str, env) do # Might need to change structure of the data structure "atm"
+  def eval_match({:atm, id}, str, env) do
     case str do
       ^id -> {:ok, env} # An atom can only be matched to itself
       _ -> :fail
@@ -55,37 +126,35 @@ defmodule Eager do
     end
   end
 
-  def eval_match({:cons, head, tail}, {head_str, tail_str}, env) do
-    case eval_match(head, head_str, env) do
+  def eval_match({:cons, ptrn1, ptrn2}, {str1, str2}, env) do
+    case eval_match(ptrn1, str1, env) do
       :fail -> :fail
-      {_, ext_env} -> eval_match(tail, tail_str, ext_env)
+      {_, updated} -> eval_match(ptrn2, str2, updated)
     end
   end
-
 
   def eval_match(_, _, _) do :fail end
 
   #----------------------------------Sequences-------------------------------------#
 
-
-  def eval_scope(pattern, env) do
-    Env.remove(extract_vars(pattern), env)
-  end
-
   def eval_seq([expr], env) do
     eval_expr(expr, env)
   end
 
-  def eval_seq([{:match, pattern, term} | tail], env) do
+  def eval_seq([{:match, ptrn, term} | tail], env) do
     case eval_expr(term, env) do
       :fail -> :error
       {_, str} ->
-        env = eval_scope(pattern, env)
-        case eval_match(pattern, str, env) do
+        env = eval_scope(ptrn, env)
+        case eval_match(ptrn, str, env) do
           :fail -> :error
           {:ok, env} -> eval_seq(tail, env)
         end
     end
+  end
+
+  def eval_scope(ptrn, env) do
+    Env.remove(extract_vars(ptrn), env)
   end
 
   # Function for extracting all variables in an expression
