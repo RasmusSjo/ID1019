@@ -11,7 +11,7 @@ defmodule Eval do
 
   def test(test_num) do
 
-    env = %{x: 5, y: 4, z: -2, pi: 3.14}
+    env = %{x: 7, y: 4, z: -2}
 
     expr = case test_num do
       1 ->  {:add,
@@ -38,13 +38,24 @@ defmodule Eval do
                 {:q, 7, 3}},
               {:sub,
                 {:q, 2, 5},
-                {:q, 3, 10}}} # (13/(5/9) + 7/3) * (2/5 - 3/10) = 2.573333
+                {:q, 3, 10}}} # (x/(5/9) + 7/3) * (2/5 - 3/10) = 2.573333
       8 ->  {:sub,
               {:q, 2, 5},
               {:q, 3, 10}}
       9 ->  {:add,
               {:div, {:num, 13}, {:q, 5, 9}},
               {:q, 7, 3}}
+      10 -> {:mul,
+              {:add,
+                {:div, {:var, :x}, {:q, 5, 9}},
+                {:q, 7, 3}},
+              {:sub,
+                {:q, 2, 5},
+                {:num, 3}}}
+      11 -> {:sub, {:num, 2}, {:num, 3}}
+      12 -> {:sub,
+              {:q, 2, 5},
+              {:num, 3}}
       _ -> :error
     end
 
@@ -85,7 +96,7 @@ defmodule Eval do
 
   def eval({:sub, {:num, num}, {:q, num1, num2}}, _) do simplify({:q, num * num2 - num1, num2}) end
 
-  def eval({:sub, {:q, num1, num2}, {:num, num}}, _) do simplify({:q, num * num2 - num1, num2}) end
+  def eval({:sub, {:q, num1, num2}, {:num, num}}, _) do simplify({:q, num1 - num * num2, num2}) end
 
   def eval({:sub, {:q, num1, num2}, {:q, num3, num4}}, _) do simplify({:q, num1 * num4 - num3 * num2, num2 * num4}) end
 
