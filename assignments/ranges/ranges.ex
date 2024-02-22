@@ -1,7 +1,0 @@
-defmodule Ranges do
-
-
-
-
-
-end
