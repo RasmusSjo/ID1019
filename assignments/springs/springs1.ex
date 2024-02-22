@@ -5,6 +5,12 @@ defmodule Springs1 do
     eval_rows(rows)
   end
 
+  def test(seq) do
+    rows = parse_rows(seq)
+    eval_rows(rows)
+  end
+
+
   #--------------------------------Eval row functions-----------------------------------#
 
   def eval_rows([]) do 0 end
@@ -14,8 +20,8 @@ defmodule Springs1 do
 
   def eval_row({[], []}, _) do 1 end
   def eval_row({[], _}, _) do 0 end
-  def eval_row({["." | springs], []}, _) do eval_row({springs, []}, 0) end
-  def eval_row({["." | springs], [num | nums]}, count) do
+  def eval_row({[?. | springs], []}, _) do eval_row({springs, []}, 0) end
+  def eval_row({[?. | springs], [num | nums]}, count) do
     case count do
       0 -> eval_row({springs, [num | nums]}, 0)
       _ ->
@@ -27,13 +33,13 @@ defmodule Springs1 do
     end
   end
 
-  def eval_row({["#" | _], []}, _) do 0 end
-  def eval_row({["#" | springs], seq}, count) do
+  def eval_row({[?# | _], []}, _) do 0 end
+  def eval_row({[?# | springs], seq}, count) do
     eval_row({springs, seq}, count + 1)
   end
 
-  def eval_row({["?" | springs], seq}, count) do
-    eval_row({["." | springs], seq}, count) + eval_row({["#" | springs], seq}, count)
+  def eval_row({[?? | springs], seq}, count) do
+    eval_row({[?. | springs], seq}, count) + eval_row({[?# | springs], seq}, count)
   end
 
   #---------------------------------Utility functions-----------------------------------#
@@ -45,7 +51,7 @@ defmodule Springs1 do
 
   def parse_row(row) do
     [status | sequence] = String.split(row, [" ", ","], trim: true)
-    {String.split(status, "", trim: true) ++ ["."], Enum.map(sequence, fn value -> String.to_integer(value) end)}
+    {String.to_charlist(status) ++ [?.], Enum.map(sequence, fn value -> String.to_integer(value) end)}
   end
 
 end
