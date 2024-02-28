@@ -1,4 +1,4 @@
-defmodule Ranges do
+defmodule Ranges1 do
 
   def test() do
     {seeds, maps} = parse(File.read!("input.txt"))
@@ -15,7 +15,7 @@ defmodule Ranges do
     seeds = seeds
       |> String.split()
       |> Enum.drop(1)
-      |>Enum.map(&String.to_integer(&1))
+      |> Enum.map(&String.to_integer(&1))
 
     maps = maps
       |> Enum.map(&parse_map(&1))
@@ -45,7 +45,7 @@ defmodule Ranges do
   def seed_to_location(location, []) do location end
   def seed_to_location(value, [map | maps]) do
     line = Enum.find(map, :nil, fn [_, src, range] ->
-      value in src..(src + range)
+      src <= value and value < src + range
     end)
 
     location = case line do
