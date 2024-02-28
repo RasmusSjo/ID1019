@@ -8,6 +8,17 @@ defmodule Mandel do
     rows(width, height, trans, depth, [])
   end
 
+  def rows(width, height, trans, depth, image) do
+    Enum.reduce(height - 1..0, image, fn y, acc ->
+      [Enum.map(0..width - 1, fn x ->
+        trans.(x, y)
+          |> Brot.mandelbrot(depth)
+          |> Color.convert(depth)
+      end) | acc]
+    end)
+  end
+
+
   def demo() do
     small(-2.6, 1.2, 1.2)
   end
