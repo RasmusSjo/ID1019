@@ -23,7 +23,20 @@ defmodule Huffman do
   end
 
   def tree(sample) do
-    # To implement...
+    freq = freq(sample)
+    huffman(freq)
+  end
+
+  def freq(sample) do
+    freq(sample, ...)
+  end
+
+  def freq([], freq) do
+    ...
+  end
+
+  def freq([char | rest], freq) do
+    freq(rest, ...)
   end
 
   def encode_table(tree) do
