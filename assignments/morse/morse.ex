@@ -2,7 +2,7 @@ defmodule Morse do
 
   # The codes that you should decode:
 
-  def base, do: '.- .-.. .-.. ..-- -.-- --- ..- .-. ..-- -... .- ... . ..-- .- .-. . ..-- -... . .-.. --- -. --. ..-- - --- ..-- ..- ...a'
+  def base, do: '.- .-.. .-.. ..-- -.-- --- ..- .-. ..-- -... .- ... . ..-- .- .-. . ..-- -... . .-.. --- -. --. ..-- - --- ..-- ..- ...'
 
   def rolled, do: '.... - - .--. ... ---... .----- .----- .-- .-- .-- .-.-.- -.-- --- ..- - ..- -... . .-.-.- -.-. --- -- .----- .-- .- - -.-. .... ..--.. ...- .----. -.. .--.-- ..... .---- .-- ....- .-- ----. .--.-- ..... --... --. .--.-- ..... ---.. -.-. .--.-- ..... .----'
 
@@ -53,38 +53,72 @@ defmodule Morse do
 
   #-----------------------------------Signal decoding-----------------------------------#
 
+  def decode(signal) do
+    decode(signal, Morse.tree)
+  end
+
   def decode(signal, tree) do
     decode(signal, tree, tree, [])
   end
 
-  def decode([], {:node, :na, _left, _right}, _tree, decoding) do
+  def decode([], {:node, :na, _long, _short}, _tree, decoding) do
     Enum.reverse(decoding)
   end
 
-  def decode([], {:node, char, _left, _right}, _tree, decoding) do
+  def decode([], {:node, char, _long, _short}, _tree, decoding) do
     # char is prepended if
     Enum.reverse([char | decoding])
   end
 
-  def decode([?- | chars], {:node, _char, left, _right}, tree, decoding) do
-    decode(chars, left, tree, decoding)
+  def decode([?- | chars], {:node, _char, long, _short}, tree, decoding) do
+    decode(chars, long, tree, decoding)
   end
 
-  def decode([?. | chars], {:node, _char, _left, right}, tree, decoding) do
-    decode(chars, right, tree, decoding)
+  def decode([?. | chars], {:node, _char, _long, short}, tree, decoding) do
+    decode(chars, short, tree, decoding)
   end
 
-  def decode([?\s | chars], {:node, :na, _left, _right}, tree, decoding) do
+  def decode([?\s | chars], {:node, :na, _long, _short}, tree, decoding) do
     decode(chars, tree, tree, decoding)
   end
 
-  def decode([?\s | chars], {:node, char, _left, _right}, tree, decoding) do
+  def decode([?\s | chars], {:node, char, _long, _short}, tree, decoding) do
     decode(chars, tree, tree, [char | decoding])
   end
 
-  def decode([char | chars], _node, tree, decoding) do
+  def decode([char | _chars], _node, _tree, _decoding) do
     {:error, "The character '#{List.to_string([char])}' is not a valid signal character"}
   end
 
+  #----------------------------------Message encoding-----------------------------------#
+
+  def encode(message) do
+    map = encode_table(Morse.tree, [], Map.new())
+
+    [_ | encoding] = Enum.reduce(message, [], fn char, acc ->
+      {_, encoding} = Map.fetch(map, char)
+      [' ', encoding | acc]
+    end)
+
+    encoding
+      |> Enum.reverse()
+      |> List.flatten()
+
+  end
+
+  def encode_table({:node, :na, long, short}, path, table) do
+    updated = encode_table(long, [?- | path], table)
+    encode_table(short, [?. | path], updated)
+  end
+
+  def encode_table(:nil, _path, table) do
+    table
+  end
+
+  def encode_table({:node, char, long, short}, path, table) do
+    table = Map.put(table, char, Enum.reverse(path))
+    table = encode_table(long, [?- | path], table)
+    encode_table(short, [?. | path], table)
+  end
 
   end
