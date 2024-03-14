@@ -24,15 +24,15 @@ This course covered two crucial programming paradigms: functional programming an
   <li>Springs - the day 12 assignment of the 2023 Advent of Code (part 1).</li>
   <li>Ranges - the day 5 assignment of the 2023 Advent of Code.</li>
   <li>Mandelbrot - a Mandelbrot image generator.</li>
-  <li>Huffman - a Huffman text encoder and decoder</li>
-  <li>Morse - surprise assignment with only 10 hours of completion time. A Morse code encoder and decoder</li>
+  <li>Huffman - a Huffman text encoder and decoder.</li>
+  <li>Morse - surprise assignment with only 10 hours of completion time. A Morse code encoder and decoder.</li>
 </ul>
 
 <p>Higher grade assignments (in chronological order)</p>
 
 <ul>
   <li>Interpretor - a meta interpreter supporting a small portion of the Elixir language.</li>
-  <li>Higher order function (same file as operations assignment) - utilising higher-order functions (HOF) to implement the same functions as in the mandatory assignment</li>
-  <li>Springs (same file as mandatory Springs assignment) - part 2 of the Advent of Code assignment</li>
+  <li>Higher order function (same file as operations assignment) - utilising higher-order functions (HOF) to implement the same functions as in the mandatory assignment (operations).</li>
+  <li>Springs (same file as mandatory Springs assignment) - part 2 of the Advent of Code assignment. This assignment was only partially completed.</li>
 </ul>
 
